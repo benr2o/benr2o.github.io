@@ -19,7 +19,9 @@ const Scene = {
 		animPercent: 0.00,
 		text: "DAWIN",
 		starGeo: null,
-		stars: null
+		stars: null,
+		shots: [],
+		audioLoader: null,
 	},
 	animate: () => {
 		requestAnimationFrame(Scene.animate);
@@ -45,26 +47,21 @@ const Scene = {
 			// 	var arrow = new THREE.ArrowHelper(ray.ray.direction, ray.ray.origin, 1000, 0xFF00000);
 			// 	Scene.vars.scene.add(arrow);
 			// }
+			Scene.vars.spaceshipGroup.children[0].position.y = 50 + Scene.vars.mouse.y * 150;
+			Scene.vars.spaceshipGroup.children[0].position.z = -Scene.vars.mouse.x * 150;
 		}
 
-		window.addEventListener("keydown", function (event) {
+
+		window.addEventListener("click", function (event) {
 			if (event.defaultPrevented) {
 				return; // Should do nothing if the default action has been cancelled
 			}
 
 			var handled = false;
-			if (event.key === "q") {
+			if (event.type === "click") {
 				// Handle the event with KeyboardEvent.key and set handled true.
-				Scene.moveZ(Scene.vars.spaceshipGroup.children[0], false);
-			} else if (event.key === "d") {
-				// Handle the event with KeyboardEvent.keyCode and set handled true.
-				Scene.moveZ(Scene.vars.spaceshipGroup.children[0], true);
-			} else if (event.key === "z") {
-				// Handle the event with KeyboardEvent.keyCode and set handled true.
-				Scene.vars.spaceshipGroup.children[0].position.y += .01;
-			}else if (event.key === "s") {
-				// Handle the event with KeyboardEvent.keyCode and set handled true.
-				Scene.vars.spaceshipGroup.children[0].position.y -= .01;
+				Scene.shot(Scene.vars.spaceship);
+				handled = true;
 			}
 
 			if (handled) {
@@ -73,6 +70,11 @@ const Scene = {
 			}
 		}, true);
 
+		if (Scene.vars.shots.length) {
+			Scene.vars.shots.forEach(function(value, i) {
+				Scene.animShot(value, i);
+			});
+		}
 		Scene.vars.starGeo.vertices.forEach(p => {
 			p.velocity += p.acceleration
 			p.y -= p.velocity;
@@ -86,12 +88,26 @@ const Scene = {
 
 		Scene.render();
 	},
-	moveZ: (group, right) => {
-		if(group.position.z > -151 && right) {
-			group.translateZ(-0.1);
-		}
-		if(group.position.z < 151 && !right) {
-			group.translateZ(0.1);
+	shot: (group) => {
+		var geometry = new THREE.BoxGeometry(1, 60, 1);
+		var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+		var laser = new THREE.Mesh(geometry, material);
+		let laserGroup = new THREE.Group();
+		let laser2 = laser.clone();
+		laser.position.z = group.position.z - 20;
+		laser2.position.z = group.position.z + 28;
+		laserGroup.add(laser);
+		laserGroup.add(laser2);
+		laserGroup.position.x = group.position.y - 55;
+		Scene.vars.scene.add(laserGroup);
+		Scene.vars.laserGroup = laserGroup;
+		Scene.vars.shots.push(laserGroup);
+	},
+	animShot: (group, i) => {
+		group.position.y += 30;
+		if(group.position.y > 800) {
+			Scene.vars.shots.splice(i, 1);
+			Scene.vars.scene.remove(group);
 		}
 	},
 	render: () => {
@@ -147,7 +163,7 @@ const Scene = {
 
 					if (namespace === "spaceship") {
 						child.material = new THREE.MeshBasicMaterial({
-							map: new THREE.TextureLoader().load('../fbx/Textures/spaceship.jpg')
+							map: new THREE.TextureLoader().load('../texture/spaceship.jpg')
 						});
 					}
 
@@ -324,8 +340,6 @@ const Scene = {
 		// vars.scene.add(grid);
 
 
-		vars.texture = new THREE.TextureLoader().load('./texture/marbre.jpg');
-
 		let hash = document.location.hash.substr(1);
 		if (hash.length !== 0) {
 			let text = hash.substring();
@@ -340,9 +354,7 @@ const Scene = {
 			spaceship.position.z = -60;
 			spaceship.position.x = -60;
 			spaceship.position.y = 0;
-			// spaceship.rotation.x = Math.PI;
-			// spaceship.rotation.y = Math.PI/2;
-			spaceship.rotation.z = -Math.PI/2;
+			spaceship.rotation.z = -Math.PI / 2;
 			vars.scene.add(spaceship);
 			vars.spaceshipGroup = spaceship;
 
@@ -353,10 +365,9 @@ const Scene = {
 		// ajout des controles
 		vars.controls = new OrbitControls(vars.camera, vars.renderer.domElement);
 		vars.controls.maxDistance = 600;
-		// vars.controls.minPolarAngle = Math.PI / 4;
-		// vars.controls.maxPolarAngle = Math.PI / 2;
-		// vars.controls.minAzimuthAngle = - Math.PI / 4;
-		// vars.controls.maxAzimuthAngle = Math.PI / 4;
+		vars.controls.minPolarAngle = 11 * Math.PI / 6;
+		vars.controls.minAzimuthAngle = Math.PI / 2;
+		vars.controls.maxAzimuthAngle = Math.PI / 2;
 		vars.controls.target.set(0, 100, 0);
 		vars.controls.update();
 
@@ -366,6 +377,9 @@ const Scene = {
 		vars.stats = new Stats();
 		vars.container.appendChild(vars.stats.dom);
 
+		/**
+		 * Create stars
+		 */
 		vars.starGeo = new THREE.Geometry();
 		for (let i = 0; i < 6000; i++) {
 			let star = new THREE.Vector3(
@@ -377,7 +391,7 @@ const Scene = {
 			star.acceleration = 0.02;
 			vars.starGeo.vertices.push(star);
 		}
-		let sprite = new THREE.TextureLoader().load('../fbx/Textures/star.png');
+		let sprite = new THREE.TextureLoader().load('../texture/star.png');
 		let starMaterial = new THREE.PointsMaterial({
 			color: 0xaaaaaa,
 			size: 1.5,
@@ -386,6 +400,25 @@ const Scene = {
 
 		vars.stars = new THREE.Points(vars.starGeo, starMaterial);
 		vars.scene.add(vars.stars);
+
+		/**
+		 * Play sound
+		 */
+		// create an AudioListener and add it to the camera
+		var listener = new THREE.AudioListener();
+		vars.camera.add(listener);
+
+		// create a global audio source
+		var sound = new THREE.Audio(listener);
+
+		// load a sound and set it as the Audio object's buffer
+		var audioLoader = new THREE.AudioLoader();
+		audioLoader.load('../sounds/star-wars.ogg', function (buffer) {
+			sound.setBuffer(buffer);
+			sound.setLoop(true);
+			sound.setVolume(0.5);
+			sound.play();
+		});
 
 		Scene.animate();
 	}
