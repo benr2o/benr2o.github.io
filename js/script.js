@@ -3,6 +3,7 @@ import Stats from '../vendor/three.js-master/examples/jsm/libs/stats.module.js';
 import { OrbitControls } from '../vendor/three.js-master/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from '../vendor/three.js-master/examples/jsm/loaders/FBXLoader.js';
 
+
 const Scene = {
 	vars: {
 		container: null,
@@ -16,7 +17,9 @@ const Scene = {
 		raycaster: new THREE.Raycaster(),
 		animSpeed: null,
 		animPercent: 0.00,
-		text: "DAWIN"
+		text: "DAWIN",
+		starGeo: null,
+		stars: null
 	},
 	animate: () => {
 		requestAnimationFrame(Scene.animate);
@@ -24,8 +27,8 @@ const Scene = {
 
 		Scene.customAnimation();
 
-		if (Scene.vars.reactorGroup !== undefined) {
-			let intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.currentGroup.children, true);
+		if (Scene.vars.spaceshipGroup !== undefined) {
+			let intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.spaceshipGroup.children, true);
 
 			if (intersects.length > 0) {
 				Scene.vars.animSpeed = 0.05;
@@ -43,6 +46,37 @@ const Scene = {
 			// 	Scene.vars.scene.add(arrow);
 			// }
 		}
+
+		window.addEventListener("keydown", function (event) {
+			if (event.defaultPrevented) {
+				return; // Should do nothing if the default action has been cancelled
+			}
+
+			var handled = false;
+			if (event.key === "q") {
+				// Handle the event with KeyboardEvent.key and set handled true.
+				Scene.vars.spaceshipGroup.children[0].position.x -= .01;
+			} else if (event.key === "d") {
+				// Handle the event with KeyboardEvent.keyCode and set handled true.
+				Scene.vars.spaceshipGroup.children[0].position.x += .01;
+			}
+
+			if (handled) {
+				// Suppress "double action" if event handled
+				event.preventDefault();
+			}
+		}, true);
+
+		Scene.vars.starGeo.vertices.forEach(p => {
+			p.velocity += p.acceleration
+			p.y -= p.velocity;
+
+			if (p.y < -200) {
+				p.y = 200;
+				p.velocity = 0;
+			}
+		});
+		Scene.vars.starGeo.verticesNeedUpdate = true;
 
 		Scene.render();
 	},
@@ -70,6 +104,16 @@ const Scene = {
 
 		if (vars.animPercent <= 0.33) {
 		}
+
+		if (vars.animPercent >= 0.20 && vars.animPercent <= 0.75) {
+			let percent = (vars.animPercent - 0.2) / 0.55;
+		} else if (vars.animPercent < 0.20) {
+		}
+
+		if (vars.animPercent >= 0.40) {
+			let percent = (vars.animPercent - 0.4) / 0.6;
+		} else if (vars.animPercent < 0.70) {
+		}
 	},
 	loadFBX: (file, scale, position, rotation, color, namespace, callback) => {
 		let vars = Scene.vars;
@@ -87,9 +131,9 @@ const Scene = {
 					child.castShadow = true;
 					child.receiveShadow = true;
 
-					if (namespace === "plaquette") {
+					if (namespace === "spaceship") {
 						child.material = new THREE.MeshBasicMaterial({
-							map: Scene.vars.texture
+							map: new THREE.TextureLoader().load('../fbx/Textures/spaceship.jpg')
 						});
 					}
 
@@ -100,8 +144,6 @@ const Scene = {
 							metalness: .6
 						})
 					}
-
-					child.material.color = new THREE.Color(color);
 				}
 			});
 
@@ -117,8 +159,6 @@ const Scene = {
 			Scene.vars[namespace] = object;
 
 			callback();
-		}, (err) => {
-			console.log(err);
 		});
 
 	},
@@ -183,7 +223,7 @@ const Scene = {
 
 		// ajout de la scène
 		vars.scene = new THREE.Scene();
-		vars.scene.background = new THREE.Color(0xa0a0a0);
+		vars.scene.background = new THREE.Color(0x000000);
 		vars.scene.fog = new THREE.Fog(vars.scene.background, 500, 3000);
 
 		// paramétrage du moteur de rendu
@@ -197,8 +237,10 @@ const Scene = {
 		vars.container.appendChild(vars.renderer.domElement);
 
 		// ajout de la caméra
-		vars.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
-		vars.camera.position.set(-1.5, 210, 572);
+		vars.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000);
+		vars.camera.position.z = 1;
+		vars.camera.position.x = Math.PI / 2;
+
 
 		// ajout de la lumière
 		const lightIntensityHemisphere = .5;
@@ -251,17 +293,6 @@ const Scene = {
 		// let helper3 = new THREE.DirectionalLightHelper(light3, 5);
 		// vars.scene.add(helper3);
 
-		// ajout du sol
-		let mesh = new THREE.Mesh(
-			new THREE.PlaneBufferGeometry(2000, 2000),
-			new THREE.MeshLambertMaterial(
-				{ color: new THREE.Color(0x888888) }
-			)
-		);
-		mesh.rotation.x = -Math.PI / 2;
-		mesh.receiveShadow = false;
-		vars.scene.add(mesh);
-
 		let planeMaterial = new THREE.ShadowMaterial();
 		planeMaterial.opacity = 0.07;
 		let shadowPlane = new THREE.Mesh(
@@ -279,11 +310,7 @@ const Scene = {
 		// vars.scene.add(grid);
 
 		// ajout de la sphère
-		let geometry = new THREE.SphereGeometry(1000, 32, 32);
-		let material = new THREE.MeshPhongMaterial({ color: new THREE.Color(0xFFFFFF) });
-		material.side = THREE.DoubleSide;
-		let sphere = new THREE.Mesh(geometry, material);
-		vars.scene.add(sphere);
+
 
 		vars.texture = new THREE.TextureLoader().load('./texture/marbre.jpg');
 
@@ -293,50 +320,61 @@ const Scene = {
 			Scene.vars.text = decodeURI(text);
 		}
 
+		Scene.loadFBX("spaceship.fbx", 5, [45, 22, 0], [0, 0, 0], 0x225236, 'spaceship', () => {
+			let vars = Scene.vars;
 
-			Scene.loadText(Scene.vars.text, 10, [0, 23, 52], [0, 0, 0], 0x1A1A1A, "texte", () => {
+			let spaceship = new THREE.Group();
+			spaceship.add(vars.spaceship);
+			spaceship.position.z = 1;
+			spaceship.position.y = 0;
+			spaceship.rotation.x = Math.PI/2;
+			spaceship.rotation.y = 3*Math.PI/4;
+			vars.scene.add(spaceship);
+			vars.spaceshipGroup = spaceship;
 
-				let vars = Scene.vars;
+			let elem = document.querySelector('#loading');
+			elem.parentNode.removeChild(elem);
+		});
 
-				let group = new THREE.Group();
-				group.add(vars.texte);
-				group.children[1].traverse(node => {
-					if (node.isMesh) {
-						node.material = new THREE.MeshStandardMaterial({
-							color: new THREE.Color(0x00B8D9),
-							brightness: .6
-						});
-					}
-				});
+		// ajout des controles
+		vars.controls = new OrbitControls(vars.camera, vars.renderer.domElement);
+		vars.controls.minDistance = 300;
+		vars.controls.maxDistance = 600;
+		// vars.controls.minPolarAngle = Math.PI / 4;
+		// vars.controls.maxPolarAngle = Math.PI / 2;
+		// vars.controls.minAzimuthAngle = - Math.PI / 4;
+		// vars.controls.maxAzimuthAngle = Math.PI / 4;
+		vars.controls.target.set(0, 100, 0);
+		vars.controls.update();
 
-				group.position.z = 0;
-				group.position.y = 100;
-				group.rotation.y = -Math.PI;
-				group.rotation.x = -Math.PI / 4;
-				vars.stand.position.z = -40;
-				vars.scene.add(group);
-				vars.scene.add(vars.stand);
-				vars.currentGroup = group;
-			});
+		window.addEventListener('resize', Scene.onWindowResize, false);
+		window.addEventListener('mousemove', Scene.onMouseMove, false);
 
-// ajout des controles
-vars.controls = new OrbitControls(vars.camera, vars.renderer.domElement);
-vars.controls.minDistance = 100;
-vars.controls.maxDistance = 600;
-vars.controls.minPolarAngle = Math.PI / 4;
-vars.controls.maxPolarAngle = Math.PI;
-vars.controls.minAzimuthAngle = - Math.PI / 4;
-vars.controls.maxAzimuthAngle = Math.PI / 4;
-vars.controls.target.set(0, 100, 0);
-vars.controls.update();
+		vars.stats = new Stats();
+		vars.container.appendChild(vars.stats.dom);
 
-window.addEventListener('resize', Scene.onWindowResize, false);
-window.addEventListener('mousemove', Scene.onMouseMove, false);
+		vars.starGeo = new THREE.Geometry();
+		for (let i = 0; i < 6000; i++) {
+			let star = new THREE.Vector3(
+				Math.random() * 600 - 300,
+				Math.random() * 600 - 300,
+				Math.random() * 600 - 300
+			);
+			star.velocity = 0;
+			star.acceleration = 0.02;
+			vars.starGeo.vertices.push(star);
+		}
+		let sprite = new THREE.TextureLoader().load('../fbx/Textures/star.png');
+		let starMaterial = new THREE.PointsMaterial({
+			color: 0xaaaaaa,
+			size: 1.5,
+			map: sprite
+		});
 
-vars.stats = new Stats();
-vars.container.appendChild(vars.stats.dom);
+		vars.stars = new THREE.Points(vars.starGeo, starMaterial);
+		vars.scene.add(vars.stars);
 
-Scene.animate();
+		Scene.animate();
 	}
 };
 
