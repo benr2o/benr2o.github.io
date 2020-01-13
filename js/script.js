@@ -55,10 +55,16 @@ const Scene = {
 			var handled = false;
 			if (event.key === "q") {
 				// Handle the event with KeyboardEvent.key and set handled true.
-				Scene.vars.spaceshipGroup.children[0].position.x -= .01;
+				Scene.moveZ(Scene.vars.spaceshipGroup.children[0], false);
 			} else if (event.key === "d") {
 				// Handle the event with KeyboardEvent.keyCode and set handled true.
-				Scene.vars.spaceshipGroup.children[0].position.x += .01;
+				Scene.moveZ(Scene.vars.spaceshipGroup.children[0], true);
+			} else if (event.key === "z") {
+				// Handle the event with KeyboardEvent.keyCode and set handled true.
+				Scene.vars.spaceshipGroup.children[0].position.y += .01;
+			}else if (event.key === "s") {
+				// Handle the event with KeyboardEvent.keyCode and set handled true.
+				Scene.vars.spaceshipGroup.children[0].position.y -= .01;
 			}
 
 			if (handled) {
@@ -79,6 +85,14 @@ const Scene = {
 		Scene.vars.starGeo.verticesNeedUpdate = true;
 
 		Scene.render();
+	},
+	moveZ: (group, right) => {
+		if(group.position.z > -151 && right) {
+			group.translateZ(-0.1);
+		}
+		if(group.position.z < 151 && !right) {
+			group.translateZ(0.1);
+		}
 	},
 	render: () => {
 		Scene.vars.renderer.render(Scene.vars.scene, Scene.vars.camera);
@@ -238,7 +252,7 @@ const Scene = {
 
 		// ajout de la caméra
 		vars.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000);
-		vars.camera.position.z = 1;
+		vars.camera.position.y = -250;
 		vars.camera.position.x = Math.PI / 2;
 
 
@@ -309,8 +323,6 @@ const Scene = {
 		// grid.material.transparent = true;
 		// vars.scene.add(grid);
 
-		// ajout de la sphère
-
 
 		vars.texture = new THREE.TextureLoader().load('./texture/marbre.jpg');
 
@@ -325,10 +337,12 @@ const Scene = {
 
 			let spaceship = new THREE.Group();
 			spaceship.add(vars.spaceship);
-			spaceship.position.z = 1;
+			spaceship.position.z = -60;
+			spaceship.position.x = -60;
 			spaceship.position.y = 0;
-			spaceship.rotation.x = Math.PI/2;
-			spaceship.rotation.y = 3*Math.PI/4;
+			// spaceship.rotation.x = Math.PI;
+			// spaceship.rotation.y = Math.PI/2;
+			spaceship.rotation.z = -Math.PI/2;
 			vars.scene.add(spaceship);
 			vars.spaceshipGroup = spaceship;
 
@@ -338,7 +352,6 @@ const Scene = {
 
 		// ajout des controles
 		vars.controls = new OrbitControls(vars.camera, vars.renderer.domElement);
-		vars.controls.minDistance = 300;
 		vars.controls.maxDistance = 600;
 		// vars.controls.minPolarAngle = Math.PI / 4;
 		// vars.controls.maxPolarAngle = Math.PI / 2;
