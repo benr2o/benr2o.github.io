@@ -71,7 +71,7 @@ const Scene = {
 		}, true);
 
 		if (Scene.vars.shots.length) {
-			Scene.vars.shots.forEach(function(value, i) {
+			Scene.vars.shots.forEach(function (value, i) {
 				Scene.animShot(value, i);
 			});
 		}
@@ -102,10 +102,11 @@ const Scene = {
 		Scene.vars.scene.add(laserGroup);
 		Scene.vars.laserGroup = laserGroup;
 		Scene.vars.shots.push(laserGroup);
+		Scene.loadSound('../sounds/shot.ogg', false);
 	},
 	animShot: (group, i) => {
 		group.position.y += 30;
-		if(group.position.y > 800) {
+		if (group.position.y > 800) {
 			Scene.vars.shots.splice(i, 1);
 			Scene.vars.scene.remove(group);
 		}
@@ -233,6 +234,26 @@ const Scene = {
 			callback();
 		});
 	},
+	loadSound: (file, infinit) => {
+		/**
+		 * Play sound
+		 */
+		// create an AudioListener and add it to the camera
+		var listener = new THREE.AudioListener();
+		Scene.vars.camera.add(listener);
+
+		// create a global audio source
+		var sound = new THREE.Audio(listener);
+
+		// load a sound and set it as the Audio object's buffer
+		var audioLoader = new THREE.AudioLoader();
+		audioLoader.load(file, function (buffer) {
+			sound.setBuffer(buffer);
+			sound.setLoop(infinit);
+			sound.setVolume(0.5);
+			sound.play();
+		});
+	},
 	onWindowResize: () => {
 		let vars = Scene.vars;
 		vars.camera.aspect = window.innerWidth / window.innerHeight;
@@ -347,19 +368,27 @@ const Scene = {
 		}
 
 		Scene.loadFBX("spaceship.fbx", 5, [45, 22, 0], [0, 0, 0], 0x225236, 'spaceship', () => {
-			let vars = Scene.vars;
+			Scene.loadFBX("Star Destroyer.fbx", 1, [45, 22, 0], [0, 0, 0], 0x000000, 'ennemy', () => {
+				let vars = Scene.vars;
 
-			let spaceship = new THREE.Group();
-			spaceship.add(vars.spaceship);
-			spaceship.position.z = -60;
-			spaceship.position.x = -60;
-			spaceship.position.y = 0;
-			spaceship.rotation.z = -Math.PI / 2;
-			vars.scene.add(spaceship);
-			vars.spaceshipGroup = spaceship;
+				let spaceship = new THREE.Group();
+				spaceship.add(vars.spaceship);
+				spaceship.position.z = -60;
+				spaceship.position.x = -60;
+				spaceship.position.y = 0;
+				spaceship.rotation.z = -Math.PI / 2;
+				vars.ennemy.position.z = 30;
+				vars.ennemy.position.x = 30;
+				vars.ennemy.position.y = 930;
+				vars.ennemy.rotation.y = Math.PI;
+				vars.ennemy.rotation.z = Math.PI / 2;
+				vars.scene.add(spaceship);
+				vars.scene.add(vars.ennemy);
+				vars.spaceshipGroup = spaceship;
 
-			let elem = document.querySelector('#loading');
-			elem.parentNode.removeChild(elem);
+				let elem = document.querySelector('#loading');
+				elem.parentNode.removeChild(elem);
+			});
 		});
 
 		// ajout des controles
@@ -401,24 +430,7 @@ const Scene = {
 		vars.stars = new THREE.Points(vars.starGeo, starMaterial);
 		vars.scene.add(vars.stars);
 
-		/**
-		 * Play sound
-		 */
-		// create an AudioListener and add it to the camera
-		var listener = new THREE.AudioListener();
-		vars.camera.add(listener);
-
-		// create a global audio source
-		var sound = new THREE.Audio(listener);
-
-		// load a sound and set it as the Audio object's buffer
-		var audioLoader = new THREE.AudioLoader();
-		audioLoader.load('../sounds/star-wars.ogg', function (buffer) {
-			sound.setBuffer(buffer);
-			sound.setLoop(true);
-			sound.setVolume(0.5);
-			sound.play();
-		});
+		Scene.loadSound('../sounds/star-wars.ogg', true);
 
 		Scene.animate();
 	}
