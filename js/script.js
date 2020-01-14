@@ -136,16 +136,20 @@ const Scene = {
 			group.position.y = 4000;
 		}
 	},
-	spinAnim: (group) => {
+	spinAnim: (group ) => {
 		var cpt = 0;
-		let id = window.setInterval(() => {
-			cpt ++;
-			group.rotation.y += 6 * Math.PI / 180;
-			console.log(cpt);
-			if(cpt === 60) {
-				window.clearInterval(id);
-			} 
-		}, 10);
+		if(cpt === 0) {
+			let id = window.setInterval(() => {
+				cpt ++;
+				group.rotation.y += 5 * Math.PI / 180;
+				console.log(cpt);
+				if(cpt === 72) {
+					window.clearInterval(id);
+					cpt = 0;
+				} 
+			}, 10);
+			Scene.loadSound('../sounds/WEEEOOOOWW.ogg', false);
+		}
 	},
 	render: () => {
 		Scene.vars.renderer.render(Scene.vars.scene, Scene.vars.camera);
@@ -432,6 +436,8 @@ const Scene = {
 					vars.scene.add(vars.ennemy);
 					vars.scene.add(vars.ennemy2);
 					vars.spaceshipGroup = spaceship;
+
+					Scene.loadSound('../sounds/engine.ogg', true);
 
 					let elem = document.querySelector('#loading');
 					elem.parentNode.removeChild(elem);
