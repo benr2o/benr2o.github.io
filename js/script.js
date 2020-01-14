@@ -119,10 +119,10 @@ const Scene = {
 		let laserGroup = new THREE.Group();
 
 		// Les lasers placés par la methode place Laser
-		var laser = Scene.placeLaser(group, -25, 100, -5);
-		let laser2 = Scene.placeLaser(group, -25, 100, -130);
-		let laser3 = Scene.placeLaser(group, -70, 100, -5);
-		let laser4 = Scene.placeLaser(group, -70, 100, -130);
+		var laser = Scene.placeLaser(group, 60, 90, 55);
+		let laser2 = Scene.placeLaser(group, 60, 90, -65);
+		let laser3 = Scene.placeLaser(group, 10, 90, 55);
+		let laser4 = Scene.placeLaser(group, 10, 90, -65);
 
 		// AJout dans le groupe
 		laserGroup.add(laser);
@@ -438,6 +438,7 @@ const Scene = {
 					spaceshipHitbox.position.y = 35;
 					spaceshipHitbox.rotation.z = spaceship.rotation.z;
 					spaceshipHitbox.rotation.y = spaceship.rotation.y;
+					spaceshipHitbox.visible = false;
 					
 					vars.ennemy.position.z = 300;
 					vars.ennemy.position.x = -350;
