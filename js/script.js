@@ -30,47 +30,43 @@ const Scene = {
 		Scene.customAnimation();
 
 		if (Scene.vars.spaceshipGroup !== undefined) {
-			let intersects = Scene.vars.raycaster.intersectObjects(Scene.vars.spaceshipGroup.children, true);
+			window.addEventListener("click", function (event) {
+				if (event.defaultPrevented) {
+					return; // Should do nothing if the default action has been cancelled
+				}
+	
+				var handled = false;
+				if (event.type === "click") {
+					// Handle the event with KeyboardEvent.key and set handled true.
+					Scene.shot(Scene.vars.spaceshipGroup);
+					handled = true;
+				}
+				if (handled) {
+					// Suppress "double action" if event handled
+					event.preventDefault();
+				}
+			}, true);
+			window.addEventListener("keydown", function (event) {
+				if (event.defaultPrevented) {
+					return; // Should do nothing if the default action has been cancelled
+				}
+				var handled = false;
+				if (event.code === "Space") {
+					// Handle the event with KeyboardEvent.key and set handled true.
+					Scene.spinAnim(Scene.vars.spaceshipGroup);
+					handled = true;
+				}
 
-			if (intersects.length > 0) {
-				Scene.vars.animSpeed = 0.05;
-			} else {
-				Scene.vars.animSpeed = -0.05;
-			}
-
-			// let mouse = new THREE.Vector3(Scene.vars.mouse.x, Scene.vars.mouse.y, 0);
-			// mouse.unproject(Scene.vars.camera);
-
-			// let ray = new THREE.Raycaster(Scene.vars.camera.position, mouse.sub(Scene.vars.camera.position).normalize()); 
-			// let intersects = ray.intersectObjects(Scene.vars.goldGroup.children, true);
-			// if(intersects.length > 0) {
-			// 	var arrow = new THREE.ArrowHelper(ray.ray.direction, ray.ray.origin, 1000, 0xFF00000);
-			// 	Scene.vars.scene.add(arrow);
-			// }
+				if (handled) {
+					// Suppress "double action" if event handled
+					event.preventDefault();
+				}
+			});
 			Scene.vars.spaceshipGroup.position.x = (Scene.vars.mouse.y * 200) - 60;
-			// Scene.vars.spaceshipGroup.children[1].position.y = (Scene.vars.mouse.y * 200) + 30;
 			Scene.vars.spaceshipGroup.position.z = -(Scene.vars.mouse.x * 200);
-			// Scene.vars.spaceshipGroup.children[1].position.z = (Scene.vars.mouse.x * 200) - 70;
 		}
 
 
-		window.addEventListener("click", function (event) {
-			if (event.defaultPrevented) {
-				return; // Should do nothing if the default action has been cancelled
-			}
-
-			var handled = false;
-			if (event.type === "click") {
-				// Handle the event with KeyboardEvent.key and set handled true.
-				Scene.shot(Scene.vars.spaceshipGroup);
-				handled = true;
-			}
-
-			if (handled) {
-				// Suppress "double action" if event handled
-				event.preventDefault();
-			}
-		}, true);
 
 		if (Scene.vars.shots.length) {
 			Scene.vars.shots.forEach(function (value, i) {
@@ -87,76 +83,69 @@ const Scene = {
 			}
 		});
 
-		Scene.vars.ennemy.position.y -= 10;
-		Scene.vars.ennemy2.position.y -= 10;
-		if (Scene.vars.ennemy.position.y < -600) {
-			Scene.vars.ennemy.position.x = Math.random() * 600;
-			Scene.vars.ennemy.position.y = 4000;
-		}
-		if (Scene.vars.ennemy2.position.y < -600) {
-			Scene.vars.ennemy2.position.z = -Math.random() * 600;
-			Scene.vars.ennemy2.position.y = 4000;
-		}
+		Scene.animEnnemy(Scene.vars.ennemy, Math.random() * 600);
+		Scene.animEnnemy(Scene.vars.ennemy2, -Math.random() * 600);
 		Scene.vars.starGeo.verticesNeedUpdate = true;
 
 		Scene.render();
-	},
-	collision: () => {
-		for (var vertexIndex = 0; vertexIndex < Player.geometry.vertices.length; vertexIndex++) {
-			var localVertex = Player.geometry.vertices[vertexIndex].clone();
-			var globalVertex = Player.matrix.multiplyVector3(localVertex);
-			var directionVector = globalVertex.subSelf(Player.position);
-
-			var ray = new THREE.Ray(Player.position, directionVector.clone().normalize());
-			var collisionResults = ray.intersectObjects(collidableMeshList);
-			if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
-				// a collision occurred... do something...
-			}
-		}
 	},
 	shot: (group) => {
 		// Group de laser
 		let laserGroup = new THREE.Group();
 
 		// Les lasers placés par la methode place Laser
-		var laser = Scene.placeLaser(group, 60, 90, 55);
-		let laser2 = Scene.placeLaser(group, 60, 90, -65);
-		let laser3 = Scene.placeLaser(group, 10, 90, 55);
-		let laser4 = Scene.placeLaser(group, 10, 90, -65);
+		let laserHD = Scene.placeLaser(group, 70, 60, 70);
+		let laserHG = Scene.placeLaser(group, 70, 60, -55);
+		let laserBG = Scene.placeLaser(group, 70, 10, -55);
+		let laserBD = Scene.placeLaser(group, 70, 10, 70);
 
 		// AJout dans le groupe
-		laserGroup.add(laser);
-		laserGroup.add(laser2);
-		laserGroup.add(laser3);
-		laserGroup.add(laser4);
+		laserGroup.add(laserHD);
+		laserGroup.add(laserHG);
+		laserGroup.add(laserBG);
+		laserGroup.add(laserBD);
 
-		// on place le groupe en fonction de la position du xwing
-		laserGroup.position.x = group.position.x;
-		laserGroup.position.z = group.position.z;
-
-		Scene.vars.scene.add(laserGroup);
+		group.add(laserGroup);
 		Scene.vars.laserGroup = laserGroup;
 		Scene.vars.shots.push(laserGroup);
 		Scene.loadSound('../sounds/shot.ogg', false);
 	},
 	placeLaser: (group, x, y, z) => {
 		// Création du mesh laser (un rectangle)
-		var geometry = new THREE.BoxGeometry(1, 60, 1);
+		var geometry = new THREE.BoxGeometry(60, 1, 1);
 		var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 		var laser = new THREE.Mesh(geometry, material);
 
-		laser.position.x = (group.position.y / 200) + x; //haut
-		laser.position.y = (group.position.y / 200) + y; //profondeur
+		laser.position.x = (group.position.y / 200) + x; //profondeur
+		laser.position.y = (group.position.y / 200) + y; //haut
 		laser.position.z = (group.position.y / 200) + z; //droite gauche
 
 		return laser;
 	},
 	animShot: (group, i) => {
-		group.position.y += 30;
+		group.position.x += 30;
 		if (group.position.y > 800) {
 			Scene.vars.shots.splice(i, 1);
 			Scene.vars.scene.remove(group);
 		}
+	},
+	animEnnemy: (group, x) => {
+		group.position.y -= 10;
+		if (group.position.y < -600) {
+			group.position.x = x;
+			group.position.y = 4000;
+		}
+	},
+	spinAnim: (group) => {
+		var cpt = 0;
+		let id = window.setInterval(() => {
+			cpt ++;
+			group.rotation.y += 6 * Math.PI / 180;
+			console.log(cpt);
+			if(cpt === 60) {
+				window.clearInterval(id);
+			} 
+		}, 10);
 	},
 	render: () => {
 		Scene.vars.renderer.render(Scene.vars.scene, Scene.vars.camera);
@@ -414,44 +403,31 @@ const Scene = {
 			Scene.vars.text = decodeURI(text);
 		}
 
-		Scene.loadFBX("xwing.fbx", 1, [45, 22, 0], [0, 0, 0], 0x225236, 'spaceship', () => {
-			Scene.loadFBX("Star Destroyer.fbx", 2, [45, 22, 0], [0, 0, 0], 0x000000, 'ennemy', () => {
-				Scene.loadFBX("Star Destroyer.fbx", 2, [45, 22, 0], [0, 0, 0], 0x000000, 'ennemy2', () => {
+		Scene.loadFBX("Star Destroyer.fbx", 2, [45, 22, 0], [0, 0, 0], 0x000000, 'ennemy', () => {
+			Scene.loadFBX("Star Destroyer.fbx", 2, [45, 22, 0], [0, 0, 0], 0x000000, 'ennemy2', () => {
+				Scene.loadFBX("xwing.fbx", 1, [45, 22, 0], [0, 0, 0], 0x225236, 'spaceship', () => {
 					let vars = Scene.vars;
 
-					var geometry = new THREE.BoxGeometry(60, 80, 130);
-					var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-					var spaceshipHitbox = new THREE.Mesh(geometry, material);
-					
 					let spaceship = new THREE.Group();
-					spaceship.add(spaceshipHitbox);
-					
 					spaceship.add(vars.spaceship);
 					spaceship.position.z = -60;
 					spaceship.position.x = -60;
 					spaceship.position.y = 0;
 					spaceship.rotation.z = Math.PI / 2;
 					spaceship.rotation.y = Math.PI;
-					
-					spaceshipHitbox.position.z = 8;
-					spaceshipHitbox.position.x = 30;
-					spaceshipHitbox.position.y = 35;
-					spaceshipHitbox.rotation.z = spaceship.rotation.z;
-					spaceshipHitbox.rotation.y = spaceship.rotation.y;
-					spaceshipHitbox.visible = false;
-					
+
 					vars.ennemy.position.z = 300;
 					vars.ennemy.position.x = -350;
 					vars.ennemy.position.y = 530;
 					vars.ennemy.rotation.y = Math.PI;
 					vars.ennemy.rotation.z = Math.PI / 2;
-					
+
 					vars.ennemy2.position.z = 600;
 					vars.ennemy2.position.x = 800;
 					vars.ennemy2.position.y = 4000;
 					vars.ennemy2.rotation.y = Math.PI;
 					vars.ennemy2.rotation.z = Math.PI / 2;
-					
+
 					vars.scene.add(spaceship);
 					vars.scene.add(vars.ennemy);
 					vars.scene.add(vars.ennemy2);
