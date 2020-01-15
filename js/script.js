@@ -26,79 +26,57 @@ const Scene = {
 	animate: () => {
 		requestAnimationFrame(Scene.animate);
 		Scene.vars.raycaster.setFromCamera(Scene.vars.mouse, Scene.vars.camera);
-
-		Scene.customAnimation();
 		
 		let crawl = document.getElementById('crawl');
 		let content = document.getElementById('content');
-		
+
 		if (crawl.offsetTop < -7990) {
 			content.style.background = "#11ffee00";
 			crawl.innerHTML = '';
 			content.removeChild(document.querySelector('.fade'));
 			content.removeChild(document.getElementById('audio'));
 			Scene.vars.introEnd = true;
+			
+			// Start engine 
+			Scene.loadSound('engine.ogg', true);
+			Scene.loadSound('battle.ogg', true);
 		}
 		if (Scene.vars.introEnd) {
 			if (Scene.vars.spaceshipGroup !== undefined) {
-				window.addEventListener("click", function (event) {
-					if (event.defaultPrevented) {
-						return; // Should do nothing if the default action has been cancelled
-					}
+				// Handle on click shot and on pressed space bar spin
+				Scene.customAnimation();
 
-					var handled = false;
-					if (event.type === "click") {
-						// Handle the event with KeyboardEvent.key and set handled true.
-						Scene.shot(Scene.vars.spaceshipGroup);
-						handled = true;
-					}
-					if (handled) {
-						// Suppress "double action" if event handled
-						event.preventDefault();
-					}
-				}, true);
-				window.addEventListener("keydown", function (event) {
-					if (event.defaultPrevented) {
-						return; // Should do nothing if the default action has been cancelled
-					}
-					var handled = false;
-					if (event.code === "Space") {
-						// Handle the event with KeyboardEvent.key and set handled true.
-						Scene.spinAnim(Scene.vars.spaceshipGroup);
-						handled = true;
-					}
-
-					if (handled) {
-						// Suppress "double action" if event handled
-						event.preventDefault();
-					}
-				});
-				Scene.vars.spaceshipGroup.position.x = (Scene.vars.mouse.y * 200) - 60;
-				Scene.vars.spaceshipGroup.position.z = -(Scene.vars.mouse.x * 200);
-			}
-
-			if (Scene.vars.shots.length) {
-				Scene.vars.shots.forEach(function (value, i) {
-					Scene.animShot(value, i);
-				});
-			}
-
-			Scene.vars.starGeo.vertices.forEach(p => {
-				p.velocity += p.acceleration
-				p.y -= p.velocity;
-
-				if (p.y < -200) {
-					p.y = 200;
-					p.velocity = 0;
+				// Handle shots
+				if (Scene.vars.shots.length) {
+					Scene.vars.shots.forEach(function (value, i) {
+						Scene.animShot(value, i);
+					});
 				}
-			});
 
+				Scene.animStars();
+			}
+
+			// Handle enemy animation
 			Scene.animEnnemy(Scene.vars.ennemy, Math.random() * 600);
 			Scene.animEnnemy(Scene.vars.ennemy2, -Math.random() * 600);
-			Scene.vars.starGeo.verticesNeedUpdate = true;
 
 			Scene.render();
 		}
+	},
+	animStars: () => {
+		/**
+		 * Animation inspire with this video https://www.youtube.com/watch?v=Bed1z7f1EI4
+		 */
+		Scene.vars.starGeo.vertices.forEach(p => {
+			p.velocity += p.acceleration
+			p.y -= p.velocity;
+
+			if (p.y < -200) {
+				p.y = 200;
+				p.velocity = 0;
+			}
+		});
+		Scene.vars.starGeo.verticesNeedUpdate = true;
 	},
 	shot: (group) => {
 		// Group de laser
@@ -119,7 +97,7 @@ const Scene = {
 		group.add(laserGroup);
 		Scene.vars.laserGroup = laserGroup;
 		Scene.vars.shots.push(laserGroup);
-		Scene.loadSound('../sounds/shot.ogg', false);
+		Scene.loadSound('shot.ogg', false);
 	},
 	placeLaser: (group, x, y, z) => {
 		// Création du mesh laser (un rectangle)
@@ -135,6 +113,7 @@ const Scene = {
 	},
 	animShot: (group, i) => {
 		group.position.x += 30;
+		// Remove shot from the array and scene
 		if (group.position.y > 800) {
 			Scene.vars.shots.splice(i, 1);
 			Scene.vars.scene.remove(group);
@@ -159,7 +138,7 @@ const Scene = {
 					cpt = 0;
 				}
 			}, 10);
-			Scene.loadSound('../sounds/WEEEOOOOWW.ogg', false);
+			Scene.loadSound('WEEEOOOOWW.ogg', false);
 		}
 	},
 	render: () => {
@@ -167,35 +146,42 @@ const Scene = {
 		Scene.vars.stats.update();
 	},
 	customAnimation: () => {
-		let vars = Scene.vars;
+		window.addEventListener("click", function (event) {
+			if (event.defaultPrevented) {
+				return; // Should do nothing if the default action has been cancelled
+			}
 
-		if (vars.animSpeed === null) {
-			return;
-		}
+			var handled = false;
+			if (event.type === "click") {
+				// Handle laser shot
+				Scene.shot(Scene.vars.spaceshipGroup);
+				handled = true;
+			}
+			if (handled) {
+				// Suppress "double action" if event handled
+				event.preventDefault();
+			}
+		}, true);
+		window.addEventListener("keydown", function (event) {
+			if (event.defaultPrevented) {
+				return; // Should do nothing if the default action has been cancelled
+			}
+			var handled = false;
+			if (event.code === "Space") {
+				// Handle the spin animation
+				Scene.spinAnim(Scene.vars.spaceshipGroup);
+				handled = true;
+			}
 
-		vars.animPercent = vars.animPercent + vars.animSpeed;
+			if (handled) {
+				// Suppress "double action" if event handled
+				event.preventDefault();
+			}
+		});
 
-		if (vars.animPercent < 0) {
-			vars.animPercent = 0;
-			return;
-		}
-		if (vars.animPercent > 1) {
-			vars.animPercent = 1;
-			return;
-		}
-
-		if (vars.animPercent <= 0.33) {
-		}
-
-		if (vars.animPercent >= 0.20 && vars.animPercent <= 0.75) {
-			let percent = (vars.animPercent - 0.2) / 0.55;
-		} else if (vars.animPercent < 0.20) {
-		}
-
-		if (vars.animPercent >= 0.40) {
-			let percent = (vars.animPercent - 0.4) / 0.6;
-		} else if (vars.animPercent < 0.70) {
-		}
+		// Handle the movement of spaceship
+		Scene.vars.spaceshipGroup.position.x = (Scene.vars.mouse.y * 200) - 60;
+		Scene.vars.spaceshipGroup.position.z = -(Scene.vars.mouse.x * 200);
 	},
 	loadFBX: (file, scale, position, rotation, color, namespace, callback) => {
 		let vars = Scene.vars;
@@ -245,9 +231,6 @@ const Scene = {
 
 	},
 	loadSound: (file, infinit) => {
-		/**
-		 * Play sound
-		 */
 		// create an AudioListener and add it to the camera
 		var listener = new THREE.AudioListener();
 		Scene.vars.camera.add(listener);
@@ -257,7 +240,7 @@ const Scene = {
 
 		// load a sound and set it as the Audio object's buffer
 		var audioLoader = new THREE.AudioLoader();
-		audioLoader.load(file, function (buffer) {
+		audioLoader.load('../sounds/' + file, function (buffer) {
 			sound.setBuffer(buffer);
 			sound.setLoop(infinit);
 			sound.setVolume(0.5);
@@ -323,8 +306,6 @@ const Scene = {
 		light1.shadow.mapSize.width = 4096;
 		light1.shadow.mapSize.height = 4096;
 		vars.scene.add(light1);
-		// let helper = new THREE.DirectionalLightHelper(light1, 5);
-		// vars.scene.add(helper);
 
 		let light2 = new THREE.DirectionalLight(0xFFFFFF, lightIntensity);
 		light2.position.set(-400, 200, 400);
@@ -337,8 +318,6 @@ const Scene = {
 		light2.shadow.mapSize.width = 4096;
 		light2.shadow.mapSize.height = 4096;
 		vars.scene.add(light2);
-		// let helper2 = new THREE.DirectionalLightHelper(light2, 5);
-		// vars.scene.add(helper2);
 
 		let light3 = new THREE.DirectionalLight(0xFFFFFF, lightIntensity);
 		light3.position.set(400, 200, 400);
@@ -351,8 +330,6 @@ const Scene = {
 		light3.shadow.mapSize.width = 4096;
 		light3.shadow.mapSize.height = 4096;
 		vars.scene.add(light3);
-		// let helper3 = new THREE.DirectionalLightHelper(light3, 5);
-		// vars.scene.add(helper3);
 
 		let planeMaterial = new THREE.ShadowMaterial();
 		planeMaterial.opacity = 0.07;
@@ -363,13 +340,6 @@ const Scene = {
 		shadowPlane.receiveShadow = true;
 
 		vars.scene.add(shadowPlane);
-
-		// ajout de la texture helper du sol
-		// let grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
-		// grid.material.opacity = 0.2;
-		// grid.material.transparent = true;
-		// vars.scene.add(grid);
-
 
 		let hash = document.location.hash.substr(1);
 		if (hash.length !== 0) {
@@ -406,11 +376,6 @@ const Scene = {
 					vars.scene.add(vars.ennemy);
 					vars.scene.add(vars.ennemy2);
 					vars.spaceshipGroup = spaceship;
-
-					Scene.loadSound('../sounds/engine.ogg', true);
-
-					let elem = document.querySelector('#loading');
-					elem.parentNode.removeChild(elem);
 				});
 			});
 		});
@@ -444,6 +409,7 @@ const Scene = {
 			star.acceleration = 0.02;
 			vars.starGeo.vertices.push(star);
 		}
+
 		let sprite = new THREE.TextureLoader().load('../texture/star.png');
 		let starMaterial = new THREE.PointsMaterial({
 			color: 0xaaaaaa,
