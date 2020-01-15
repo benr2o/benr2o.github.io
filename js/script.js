@@ -17,77 +17,88 @@ const Scene = {
 		raycaster: new THREE.Raycaster(),
 		animSpeed: null,
 		animPercent: 0.00,
-		text: "DAWIN",
 		starGeo: null,
 		stars: null,
 		shots: [],
 		audioLoader: null,
+		introEnd: false
 	},
 	animate: () => {
 		requestAnimationFrame(Scene.animate);
 		Scene.vars.raycaster.setFromCamera(Scene.vars.mouse, Scene.vars.camera);
 
 		Scene.customAnimation();
-
-		if (Scene.vars.spaceshipGroup !== undefined) {
-			window.addEventListener("click", function (event) {
-				if (event.defaultPrevented) {
-					return; // Should do nothing if the default action has been cancelled
-				}
-	
-				var handled = false;
-				if (event.type === "click") {
-					// Handle the event with KeyboardEvent.key and set handled true.
-					Scene.shot(Scene.vars.spaceshipGroup);
-					handled = true;
-				}
-				if (handled) {
-					// Suppress "double action" if event handled
-					event.preventDefault();
-				}
-			}, true);
-			window.addEventListener("keydown", function (event) {
-				if (event.defaultPrevented) {
-					return; // Should do nothing if the default action has been cancelled
-				}
-				var handled = false;
-				if (event.code === "Space") {
-					// Handle the event with KeyboardEvent.key and set handled true.
-					Scene.spinAnim(Scene.vars.spaceshipGroup);
-					handled = true;
-				}
-
-				if (handled) {
-					// Suppress "double action" if event handled
-					event.preventDefault();
-				}
-			});
-			Scene.vars.spaceshipGroup.position.x = (Scene.vars.mouse.y * 200) - 60;
-			Scene.vars.spaceshipGroup.position.z = -(Scene.vars.mouse.x * 200);
+		
+		let crawl = document.getElementById('crawl');
+		let content = document.getElementById('content');
+		
+		if (crawl.offsetTop < -5990) {
+			content.style.background = "#11ffee00";
+			crawl.innerHTML = '';
+			content.removeChild(document.querySelector('.fade'));
+			content.removeChild(document.getElementById('audio'));
+			Scene.vars.introEnd = true;
 		}
+		if (Scene.vars.introEnd) {
+			if (Scene.vars.spaceshipGroup !== undefined) {
+				window.addEventListener("click", function (event) {
+					if (event.defaultPrevented) {
+						return; // Should do nothing if the default action has been cancelled
+					}
 
+					var handled = false;
+					if (event.type === "click") {
+						// Handle the event with KeyboardEvent.key and set handled true.
+						Scene.shot(Scene.vars.spaceshipGroup);
+						handled = true;
+					}
+					if (handled) {
+						// Suppress "double action" if event handled
+						event.preventDefault();
+					}
+				}, true);
+				window.addEventListener("keydown", function (event) {
+					if (event.defaultPrevented) {
+						return; // Should do nothing if the default action has been cancelled
+					}
+					var handled = false;
+					if (event.code === "Space") {
+						// Handle the event with KeyboardEvent.key and set handled true.
+						Scene.spinAnim(Scene.vars.spaceshipGroup);
+						handled = true;
+					}
 
-
-		if (Scene.vars.shots.length) {
-			Scene.vars.shots.forEach(function (value, i) {
-				Scene.animShot(value, i);
-			});
-		}
-		Scene.vars.starGeo.vertices.forEach(p => {
-			p.velocity += p.acceleration
-			p.y -= p.velocity;
-
-			if (p.y < -200) {
-				p.y = 200;
-				p.velocity = 0;
+					if (handled) {
+						// Suppress "double action" if event handled
+						event.preventDefault();
+					}
+				});
+				Scene.vars.spaceshipGroup.position.x = (Scene.vars.mouse.y * 200) - 60;
+				Scene.vars.spaceshipGroup.position.z = -(Scene.vars.mouse.x * 200);
 			}
-		});
 
-		Scene.animEnnemy(Scene.vars.ennemy, Math.random() * 600);
-		Scene.animEnnemy(Scene.vars.ennemy2, -Math.random() * 600);
-		Scene.vars.starGeo.verticesNeedUpdate = true;
+			if (Scene.vars.shots.length) {
+				Scene.vars.shots.forEach(function (value, i) {
+					Scene.animShot(value, i);
+				});
+			}
 
-		Scene.render();
+			Scene.vars.starGeo.vertices.forEach(p => {
+				p.velocity += p.acceleration
+				p.y -= p.velocity;
+
+				if (p.y < -200) {
+					p.y = 200;
+					p.velocity = 0;
+				}
+			});
+
+			Scene.animEnnemy(Scene.vars.ennemy, Math.random() * 600);
+			Scene.animEnnemy(Scene.vars.ennemy2, -Math.random() * 600);
+			Scene.vars.starGeo.verticesNeedUpdate = true;
+
+			Scene.render();
+		}
 	},
 	shot: (group) => {
 		// Group de laser
@@ -136,17 +147,17 @@ const Scene = {
 			group.position.y = 4000;
 		}
 	},
-	spinAnim: (group ) => {
+	spinAnim: (group) => {
 		var cpt = 0;
-		if(cpt === 0) {
+		if (cpt === 0) {
 			let id = window.setInterval(() => {
-				cpt ++;
+				cpt++;
 				group.rotation.y += 5 * Math.PI / 180;
 				console.log(cpt);
-				if(cpt === 72) {
+				if (cpt === 72) {
 					window.clearInterval(id);
 					cpt = 0;
-				} 
+				}
 			}, 10);
 			Scene.loadSound('../sounds/WEEEOOOOWW.ogg', false);
 		}
@@ -232,47 +243,6 @@ const Scene = {
 			callback();
 		});
 
-	},
-	loadText: (text, scale, position, rotation, color, namespace, callback) => {
-		let loader = new THREE.FontLoader();
-
-		if (text === undefined || text === "") {
-			return;
-		}
-
-		loader.load('./vendor/three.js-master/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-			let geometry = new THREE.TextGeometry(text, {
-				font,
-				size: 1,
-				height: 0.1,
-				curveSegments: 1,
-				bevelEnabled: false
-			});
-
-			geometry.computeBoundingBox();
-			let offset = geometry.boundingBox.getCenter().negate();
-			geometry.translate(offset.x, offset.y, offset.z);
-
-			let material = new THREE.MeshBasicMaterial({
-				color: new THREE.Color(color)
-			});
-
-			let mesh = new THREE.Mesh(geometry, material);
-
-			mesh.position.x = position[0];
-			mesh.position.y = position[1];
-			mesh.position.z = position[2];
-
-			mesh.rotation.x = rotation[0];
-			mesh.rotation.y = rotation[1];
-			mesh.rotation.z = rotation[2];
-
-			mesh.scale.x = mesh.scale.y = mesh.scale.z = scale;
-
-			Scene.vars[namespace] = mesh;
-
-			callback();
-		});
 	},
 	loadSound: (file, infinit) => {
 		/**
@@ -483,8 +453,6 @@ const Scene = {
 
 		vars.stars = new THREE.Points(vars.starGeo, starMaterial);
 		vars.scene.add(vars.stars);
-
-		Scene.loadSound('../sounds/star-wars.ogg', true);
 
 		Scene.animate();
 	}

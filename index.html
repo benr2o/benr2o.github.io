@@ -1,18 +1,46 @@
-
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>WebGL</title>
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-		<style>
-			.fullscreen {
-				position: absolute; top: 0; bottom: 0; left: 0; right: 0;
-			}
-		</style>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" />
-	</head>
-	<body>
-		
-		<script src="js/script.js" type="module"></script>
-	</body>
+
+<head>
+	<title>WebGL</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+	<style>
+		.fullscreen {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+		}
+	</style>
+	
+	<link rel="stylesheet" href="style.css"/>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" />
+</head>
+
+<body>
+	<div id="content">
+		<embed src="/sounds/star-wars.ogg" loop="false" autostart="true" hidden="true" id="audio"/>
+		<div class="fade"></div>
+		<section class="star-wars">
+			<div class="crawl" id="crawl">
+				<img src="/resources/star-wars-logo.png" alt="Logo Dawin Wars" width="100%">	
+				<div class="title">
+					<h1>The return of Denis</h1>
+				</div>
+	
+				<p>C'est une période de guerre civil. Les élèves sont accablés par les projets qui n'en finissent jamais. Mais ce qu'ils ne savent pas
+					c'est qu'ils ne sont pas au bout de leur peine.
+				</p>
+	
+				<p>L'empereur Denis leur donne l'ultime projet </p>
+	
+				<p>Pursued by the Empire’s sinister agents, Princess Leia races home aboard her starship, custodian of the
+					stolen plans that can save her people and restore freedom to the galaxy….</p>
+			</div>
+		</section>
+	</div>
+	<script src="js/script.js" type="module"></script>
+</body>
+
 </html>
