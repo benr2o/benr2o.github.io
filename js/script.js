@@ -3,7 +3,6 @@ import Stats from '../vendor/three.js-master/examples/jsm/libs/stats.module.js';
 import { OrbitControls } from '../vendor/three.js-master/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from '../vendor/three.js-master/examples/jsm/loaders/FBXLoader.js';
 
-
 const Scene = {
 	vars: {
 		container: null,
@@ -21,22 +20,28 @@ const Scene = {
 		stars: null,
 		shots: [],
 		audioLoader: null,
-		introEnd: false
+		introEnd: false,
+		skipIntro: false
 	},
 	animate: () => {
 		requestAnimationFrame(Scene.animate);
 		Scene.vars.raycaster.setFromCamera(Scene.vars.mouse, Scene.vars.camera);
-		
+
 		let crawl = document.getElementById('crawl');
 		let content = document.getElementById('content');
+		
+		let skip = document.getElementById('skip');
+		skip.addEventListener('click', () => Scene.vars.skipIntro = true);
 
-		if (crawl.offsetTop < -7990) {
+		if (crawl.offsetTop < -7990 || Scene.vars.skipIntro) {
 			content.style.background = "#11ffee00";
 			crawl.innerHTML = '';
 			content.removeChild(document.querySelector('.fade'));
 			content.removeChild(document.getElementById('audio'));
+			skip.style.display = "none";
 			Scene.vars.introEnd = true;
-			
+			Scene.vars.skipIntro = false;
+
 			// Start engine 
 			Scene.loadSound('engine.ogg', true);
 			Scene.loadSound('battle.ogg', true);
@@ -57,8 +62,8 @@ const Scene = {
 			}
 
 			// Handle enemy animation
-			Scene.animEnnemy(Scene.vars.ennemy, Math.random() * 600);
-			Scene.animEnnemy(Scene.vars.ennemy2, -Math.random() * 600);
+			Scene.animEnnemy(Scene.vars.ennemy, Math.random() * 600, Math.random() * 600);
+			Scene.animEnnemy(Scene.vars.ennemy2, -Math.random() * 800, Math.random() * 600);
 
 			Scene.render();
 		}
@@ -119,10 +124,11 @@ const Scene = {
 			Scene.vars.scene.remove(group);
 		}
 	},
-	animEnnemy: (group, x) => {
+	animEnnemy: (group, x, z) => {
 		group.position.y -= 10;
 		if (group.position.y < -600) {
 			group.position.x = x;
+			group.position.z = z;
 			group.position.y = 4000;
 		}
 	},
@@ -333,35 +339,33 @@ const Scene = {
 		}
 
 		Scene.loadFBX("Star Destroyer.fbx", 2, [45, 22, 0], [0, 0, 0], 0x000000, 'ennemy', () => {
-			Scene.loadFBX("Star Destroyer.fbx", 2, [45, 22, 0], [0, 0, 0], 0x000000, 'ennemy2', () => {
-				Scene.loadFBX("xwing.fbx", 1, [45, 22, 0], [0, 0, 0], 0x225236, 'spaceship', () => {
-					let vars = Scene.vars;
+			Scene.loadFBX("xwing.fbx", 1, [45, 22, 0], [0, 0, 0], 0x225236, 'spaceship', () => {
+				let vars = Scene.vars;
 
-					let spaceship = new THREE.Group();
-					spaceship.add(vars.spaceship);
-					spaceship.position.z = -60;
-					spaceship.position.x = -60;
-					spaceship.position.y = 0;
-					spaceship.rotation.z = Math.PI / 2;
-					spaceship.rotation.y = Math.PI;
+				let spaceship = new THREE.Group();
+				spaceship.add(vars.spaceship);
+				spaceship.position.z = -60;
+				spaceship.position.x = -60;
+				spaceship.position.y = 0;
+				spaceship.rotation.z = Math.PI / 2;
+				spaceship.rotation.y = Math.PI;
 
-					vars.ennemy.position.z = 300;
-					vars.ennemy.position.x = -350;
-					vars.ennemy.position.y = 530;
-					vars.ennemy.rotation.y = Math.PI;
-					vars.ennemy.rotation.z = Math.PI / 2;
+				vars.ennemy.position.z = 300;
+				vars.ennemy.position.x = -350;
+				vars.ennemy.position.y = 530;
+				vars.ennemy.rotation.y = Math.PI;
+				vars.ennemy.rotation.z = Math.PI / 2;
 
-					vars.ennemy2.position.z = 600;
-					vars.ennemy2.position.x = 800;
-					vars.ennemy2.position.y = 4000;
-					vars.ennemy2.rotation.y = Math.PI;
-					vars.ennemy2.rotation.z = Math.PI / 2;
+				let ennemy2 = vars.ennemy.clone();
+				vars.ennemy2 = ennemy2;
+				vars.ennemy2.position.z = 600;
+				vars.ennemy2.position.x = 800;
+				vars.ennemy2.position.y = 6000;
 
-					vars.scene.add(spaceship);
-					vars.scene.add(vars.ennemy);
-					vars.scene.add(vars.ennemy2);
-					vars.spaceshipGroup = spaceship;
-				});
+				vars.scene.add(spaceship);
+				vars.scene.add(vars.ennemy);
+				vars.scene.add(vars.ennemy2);
+				vars.spaceshipGroup = spaceship;
 			});
 		});
 
