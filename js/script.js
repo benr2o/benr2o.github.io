@@ -195,23 +195,8 @@ const Scene = {
 
 			object.traverse((child) => {
 				if (child.isMesh) {
-
 					child.castShadow = true;
 					child.receiveShadow = true;
-
-					if (namespace === "spaceships") {
-						child.material = new THREE.MeshBasicMaterial({
-							map: new THREE.TextureLoader().load('../texture/spaceship.jpg')
-						});
-					}
-
-					if (namespace === "statuette") {
-						child.material = new THREE.MeshStandardMaterial({
-							color: new THREE.Color(color),
-							roughness: .3,
-							metalness: .6
-						})
-					}
 				}
 			});
 
