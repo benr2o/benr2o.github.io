@@ -32,7 +32,7 @@ const Scene = {
 		let crawl = document.getElementById('crawl');
 		let content = document.getElementById('content');
 		
-		if (crawl.offsetTop < -5990) {
+		if (crawl.offsetTop < -7990) {
 			content.style.background = "#11ffee00";
 			crawl.innerHTML = '';
 			content.removeChild(document.querySelector('.fade'));
