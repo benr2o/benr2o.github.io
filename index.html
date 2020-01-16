@@ -13,8 +13,8 @@
 			right: 0;
 		}
 	</style>
-	
-	<link rel="stylesheet" href="style.css"/>
+
+	<link rel="stylesheet" href="style.css" />
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" />
 	<link href="https://fonts.googleapis.com/css?family=Days+One&display=swap" rel="stylesheet">
 </head>
@@ -22,25 +22,30 @@
 <body>
 	<div id="content">
 		<!-- Intro inspired by https://css-tricks.com/snippets/css/star-wars-crawl-text/ -->
-		<embed src="/sounds/star-wars.ogg" loop="false" autostart="true" hidden="true" id="audio"/>
+		<audio autoplay id="audio">
+			<source src="/sounds/star-wars.ogg" type="audio/ogg">
+		</audio>
 		<a href="#" id="skip">Passer l'intro</a>
 		<div class="fade"></div>
 		<section class="star-wars">
 			<div class="crawl" id="crawl">
-				<img src="/resources/star-wars-logo.png" alt="Logo Dawin Wars" width="100%">	
+				<img src="/resources/star-wars-logo.png" alt="Logo Dawin Wars" width="100%">
 				<div class="title">
 					<h1>The return of Denis</h1>
 				</div>
-	
-				<p>C'est une période de guerre civile. Les élèves sont accablés par les projets qui n'en finissent jamais. Mais ce qu'ils ne savent pas
+
+				<p>C'est une période de guerre civile. Les élèves sont accablés par les projets qui n'en finissent
+					jamais. Mais ce qu'ils ne savent pas
 					c'est qu'ils ne sont pas au bout de leur peine.
 				</p>
-	
-				<p>Tapi dans l'ombre l'empereur Denis rassemble ses forces pour leur donner l'ultime projet. C'est alors que Ben et d'autres élèves décident de s'allier contre
-					leur oppresseur. 
+
+				<p>Tapi dans l'ombre l'empereur Denis rassemble ses forces pour leur donner l'ultime projet. C'est alors
+					que Ben et d'autres élèves décident de s'allier contre
+					leur oppresseur.
 				</p>
-	
-				<p>Il se livre alors à une course sans limite à travers l'univers. Muni de leur vaisseau construit en Three JS, ils doivent éviter
+
+				<p>Il se livre alors à une course sans limite à travers l'univers. Muni de leur vaisseau construit en
+					Three JS, ils doivent éviter
 					les bâtiments ennemis envoyés par l'empereur.
 				</p>
 			</div>
