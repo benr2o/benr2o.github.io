@@ -3,6 +3,19 @@ import Stats from '../vendor/three.js-master/examples/jsm/libs/stats.module.js';
 import { OrbitControls } from '../vendor/three.js-master/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from '../vendor/three.js-master/examples/jsm/loaders/FBXLoader.js';
 
+var audio = document.createElement('audio');
+
+function introMusic() {
+	audio.setAttribute('src', '/sounds/star-wars.mp3');
+	audio.play();
+}
+
+function stopIntro() {
+	audio.pause();
+}
+
+introMusic();
+
 const Scene = {
 	vars: {
 		container: null,
@@ -37,7 +50,7 @@ const Scene = {
 			content.style.background = "#11ffee00";
 			crawl.innerHTML = '';
 			content.removeChild(document.querySelector('.fade'));
-			content.removeChild(document.getElementById('audio'));
+			stopIntro();
 			skip.style.display = "none";
 			Scene.vars.introEnd = true;
 			Scene.vars.skipIntro = false;
