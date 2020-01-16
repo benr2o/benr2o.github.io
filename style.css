@@ -1,4 +1,4 @@
-*:not(#skip) {
+*:not(#skip, #start) {
   cursor: none;
 }
 
@@ -40,14 +40,40 @@ body {
     overflow: hidden;
   }
 
+  
   #content {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: #000;
-      z-index: 1000;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #000;
+    z-index: 1000;
+    display: none;
+  }
+  #start {
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    color: white;
+  }
+
+  #start > a {
+    position: absolute;
+    color: #feda4a;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Days One';
+    border: 1px solid yellow;
+    border-radius: 10px;
+    font-size: 40px;
+    padding: 5px;
+    text-decoration: none;
   }
   
   .fade {

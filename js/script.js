@@ -5,9 +5,16 @@ import { FBXLoader } from '../vendor/three.js-master/examples/jsm/loaders/FBXLoa
 
 var audio = document.createElement('audio');
 
-function introMusic() {
+document.getElementById('start').addEventListener('click', function() {
 	audio.setAttribute('src', '/sounds/star-wars.mp3');
 	audio.play();
+
+	this.parentNode.removeChild(this);
+	document.getElementById('content').style.display = "block";
+	document.getElementById('crawl').classList.add('crawl');
+});
+
+function introMusic() {
 }
 
 function stopIntro() {
