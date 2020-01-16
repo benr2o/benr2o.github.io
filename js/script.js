@@ -5,7 +5,9 @@ import { FBXLoader } from '../vendor/three.js-master/examples/jsm/loaders/FBXLoa
 
 var audio = document.createElement('audio');
 
+// Button that launch the intro (way to dodge google anti-autoload sound)
 document.getElementById('start').addEventListener('click', function() {
+	// load sound
 	audio.setAttribute('src', '/sounds/star-wars.mp3');
 	audio.setAttribute('id', 'audio');
 	audio.play();
@@ -43,6 +45,7 @@ const Scene = {
 		let crawl = document.getElementById('crawl');
 		let content = document.getElementById('content');
 		
+		// Skip intro
 		let skip = document.getElementById('skip');
 		skip.addEventListener('click', () => Scene.vars.skipIntro = true);
 
