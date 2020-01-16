@@ -93,11 +93,11 @@ body {
   
   @keyframes crawl {
       0% {
-      top: 150px;
+      top: 90px;
       transform: rotateX(20deg)  translateZ(0);
     }
       100% { 
-      top: -8000px;
-      transform: rotateX(25deg) translateZ(-3000px);
+      top: -9000px;
+      transform: rotateX(25deg) translateZ(-4000px);
     }
   }

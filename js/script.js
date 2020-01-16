@@ -33,7 +33,7 @@ const Scene = {
 		let skip = document.getElementById('skip');
 		skip.addEventListener('click', () => Scene.vars.skipIntro = true);
 
-		if (crawl.offsetTop < -7990 || Scene.vars.skipIntro) {
+		if (crawl.offsetTop < -8990 || Scene.vars.skipIntro) {
 			content.style.background = "#11ffee00";
 			crawl.innerHTML = '';
 			content.removeChild(document.querySelector('.fade'));
