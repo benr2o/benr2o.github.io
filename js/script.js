@@ -7,7 +7,9 @@ var audio = document.createElement('audio');
 
 document.getElementById('start').addEventListener('click', function() {
 	audio.setAttribute('src', '/sounds/star-wars.mp3');
+	audio.setAttribute('id', 'audio');
 	audio.play();
+	document.getElementById('content').appendChild(audio);
 
 	this.parentNode.removeChild(this);
 	document.getElementById('content').style.display = "block";
@@ -48,6 +50,7 @@ const Scene = {
 			content.style.background = "#11ffee00";
 			crawl.innerHTML = '';
 			content.removeChild(document.querySelector('.fade'));
+			content.removeChild(audio);
 			skip.style.display = "none";
 			Scene.vars.introEnd = true;
 			Scene.vars.skipIntro = false;
