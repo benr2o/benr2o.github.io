@@ -138,7 +138,6 @@ const Scene = {
 			let id = window.setInterval(() => {
 				cpt++;
 				group.rotation.y += 5 * Math.PI / 180;
-				console.log(cpt);
 				if (cpt === 72) {
 					window.clearInterval(id);
 					cpt = 0;
